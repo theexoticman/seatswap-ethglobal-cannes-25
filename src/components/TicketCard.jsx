@@ -87,11 +87,11 @@ const TicketCard = ({
           <div>
             {status === 'Bidding' && currentBid ? (
               <div>
-                <span className="text-lg font-bold text-foreground">${currentBid}</span>
+                <span className="text-lg font-bold text-foreground">{currentBid}</span>
                 <span className="text-sm text-muted-foreground ml-1">(current bid)</span>
               </div>
             ) : (
-              <span className="text-lg font-bold text-foreground">${price}</span>
+              <span className="text-lg font-bold text-foreground">{price}</span>
             )}
           </div>
         </div>

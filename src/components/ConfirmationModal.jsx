@@ -102,7 +102,7 @@ const ConfirmationModal = ({
             <div className="flex items-center justify-between">
               <span className="font-semibold text-foreground">{ticket.airline}</span>
               <span className="text-sm text-muted-foreground">
-                {ticket.status === 'Bidding' ? `Current bid: $${ticket.currentBid}` : `$${ticket.price}`}
+                {ticket.status === 'Bidding' ? `Current bid: ${ticket.currentBid}` : `${ticket.price}`}
               </span>
             </div>
             

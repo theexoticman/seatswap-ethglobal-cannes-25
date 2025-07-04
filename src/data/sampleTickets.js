@@ -3,14 +3,14 @@ export const marketplaceTickets = [
     id: 1,
     airline: "Air France",
     departure: {
-      code: "CDG",
-      city: "Paris",
-      time: "2024-08-15T14:30:00Z"
+      code: "NCE",
+      city: "Nice",
+      time: "2024-07-07T10:30:00Z"
     },
     arrival: {
       code: "JFK",
       city: "New York",
-      time: "2024-08-15T17:45:00Z"
+      time: "2024-07-07T23:45:00Z"
     },
     date: "2024-08-15",
     price: 450,

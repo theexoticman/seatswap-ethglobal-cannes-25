@@ -7,6 +7,8 @@ import { Textarea } from '@/components/ui/textarea.jsx'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select.jsx'
 import { Plane, Calendar, DollarSign, MapPin, Clock } from 'lucide-react'
 import ConfirmationModal from './ConfirmationModal'
+import TicketDetailsModal from './TicketDetailsModal'
+import { marketplaceTickets } from '@/data/sampleTickets'
 
 const SellTicket = () => {
   const [formData, setFormData] = useState({
@@ -19,6 +21,11 @@ const SellTicket = () => {
     isOpen: false,
     type: null,
     isLoading: false
+  })
+
+  const [ticketDetails, setTicketDetails] = useState({
+    isOpen: false,
+    ticket: null
   })
 
   const handleInputChange = (field, value) => {
@@ -55,31 +62,25 @@ const SellTicket = () => {
   const handleConfirmFind = async () => {
     setModalState(prev => ({ ...prev, isLoading: true }))
     
-    // Mock API call to fetch flight details
-    const mockResponse = {
-      airline: "Air France",
-      departure: {
-        code: "CDG",
-        city: "Paris",
-        time: "2025-07-15T14:30:00Z"
-      },
-      arrival: {
-        code: "JFK",
-        city: "New York",
-        time: "2025-07-15T17:45:00Z"
-      },
-      date: "2025-07-15",
-      price: 450,
-      status: "Available"
-    }
+    // Find ticket by PNR (using first ticket as example)
+    const foundTicket = marketplaceTickets.find(ticket => 
+      ticket.id === 1 // Replace with actual PNR lookup logic
+    )
 
     setTimeout(() => {
-      setModalState({
-        isOpen: true,
-        type: 'details',
-        ticket: mockResponse,
-        isLoading: false
-      })
+      if (foundTicket) {
+        setTicketDetails({
+          isOpen: true,
+          ticket: foundTicket
+        })
+      } else {
+        // Handle case where ticket is not found
+        setModalState({
+          isOpen: true,
+          type: 'error',
+          isLoading: false
+        })
+      }
     }, 2000)
   }
 
@@ -111,6 +112,13 @@ const SellTicket = () => {
     setFormData({
       pnr: '',
       lastName: ''
+    })
+  }
+
+  const handleCloseTicketDetails = () => {
+    setTicketDetails({
+      isOpen: false,
+      ticket: null
     })
   }
 
@@ -176,6 +184,12 @@ const SellTicket = () => {
         type={modalState.type}
         ticket={modalState.ticket}
         isLoading={modalState.isLoading}
+      />
+
+      <TicketDetailsModal
+        isOpen={ticketDetails.isOpen}
+        onClose={handleCloseTicketDetails}
+        ticket={ticketDetails.ticket}
       />
     </div>
   )
