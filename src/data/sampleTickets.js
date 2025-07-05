@@ -86,7 +86,8 @@ export const userTickets = [
     },
     date: "2024-08-18",
     price: 520,
-    status: "Redeemable"
+    status: "Redeemable",
+    sellerWallet: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
   },
   {
     id: 6,
@@ -103,7 +104,8 @@ export const userTickets = [
     },
     date: "2024-08-22",
     price: 680,
-    status: "Registered"
+    status: "Registered",
+    sellerWallet: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
   }
 ]
 

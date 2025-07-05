@@ -86,7 +86,7 @@ const TicketCard = ({
       <div className="flex items-center space-x-2 mb-4 text-muted-foreground">
         <span className="text-sm">{ticketType}</span>
         {!isRefundable && (
-          <span className="text-sm text-red-500">• Not Refundable</span>
+          <span className="text-sm text-green-500">• Transferable</span>
         )}
       </div>
 

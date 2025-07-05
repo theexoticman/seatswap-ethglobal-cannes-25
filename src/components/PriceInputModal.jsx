@@ -3,18 +3,13 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Button } from '@/components/ui/button'
+import { toast } from 'sonner'
 
-interface SellTicketModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSubmit: (payout: number) => void
-}
+const PriceInputModal = ({ isOpen, onClose, onSubmit }) => {
+  const [payout, setPayout] = useState(null)
+  const [error, setError] = useState(null)
 
-const SellTicketModal = ({ isOpen, onClose, onSubmit }: SellTicketModalProps) => {
-  const [payout, setPayout] = useState<number | null>(null)
-  const [error, setError] = useState<string | null>(null)
-
-  const handlePayoutChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePayoutChange = (e) => {
     const value = parseFloat(e.target.value)
     if (isNaN(value) || value <= 0) {
       setError('Payout must be greater than €0')
@@ -28,7 +23,9 @@ const SellTicketModal = ({ isOpen, onClose, onSubmit }: SellTicketModalProps) =>
     if (payout && payout > 0) {
       onSubmit(payout)
     } else {
-      setError('Payout must be greater than €0')
+      const errorMessage = 'Payout must be greater than €0'
+      setError(errorMessage)
+      toast.error(errorMessage)
     }
   }
 
@@ -36,9 +33,9 @@ const SellTicketModal = ({ isOpen, onClose, onSubmit }: SellTicketModalProps) =>
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Sell My Ticket</DialogTitle>
+          <DialogTitle>Set Your Price</DialogTitle>
         </DialogHeader>
-        <div className="space-y-4">
+        <div className="space-y-4 py-4">
           <div>
             <Label htmlFor="payout">Desired Payout (€)</Label>
             <Input
@@ -48,10 +45,11 @@ const SellTicketModal = ({ isOpen, onClose, onSubmit }: SellTicketModalProps) =>
               step="0.01"
               placeholder="Enter desired payout"
               onChange={handlePayoutChange}
+              className={error ? 'border-destructive' : ''}
             />
-            {error && <p className="text-sm text-red-500 mt-1">{error}</p>}
+            {error && <p className="text-sm text-destructive mt-1">{error}</p>}
           </div>
-          <div className="flex justify-end space-x-2">
+          <div className="flex justify-end space-x-2 pt-4">
             <Button variant="outline" onClick={onClose}>
               Cancel
             </Button>
@@ -63,4 +61,4 @@ const SellTicketModal = ({ isOpen, onClose, onSubmit }: SellTicketModalProps) =>
   )
 }
 
-export default SellTicketModal 
+export default PriceInputModal 

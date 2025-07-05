@@ -1,11 +1,23 @@
 import React, { useState, useEffect } from 'react'
 import { useLocation } from 'react-router-dom'
+import { ethers } from 'ethers'
 import TicketCard from './TicketCard'
+import SellTicketModal from './SellTicketModal'
+import PriceInputModal from './PriceInputModal'
+import SuccessModal from './SuccessModal'
+import SummaryModal from './SummaryModal'
 import { userTickets } from '@/data/sampleTickets'
+import { SEATSWAP_MARKETPLACE } from '@/config'
 
 const MyTickets = ({ walletAddress }) => {
   const location = useLocation()
   const [tickets, setTickets] = useState([])
+  const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false)
+  const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
+  const [isPriceModalOpen, setIsPriceModalOpen] = useState(false)
+  const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false)
+  const [selectedTicket, setSelectedTicket] = useState(null)
+  const [payout, setPayout] = useState(null)
 
   useEffect(() => {
     if (walletAddress) {
@@ -24,8 +36,63 @@ const MyTickets = ({ walletAddress }) => {
   }, [location.state])
 
   const handleResellTicket = (ticket) => {
-    console.log('Resell ticket:', ticket)
-    // This will trigger navigation to sell ticket page or modal in a later phase
+    setSelectedTicket(ticket)
+    setIsVerificationModalOpen(true)
+  }
+
+  const handleVerificationConfirm = () => {
+    setIsVerificationModalOpen(false)
+    setIsSuccessModalOpen(true)
+  }
+
+  const handleSuccessComplete = () => {
+    setIsSuccessModalOpen(false)
+    setIsPriceModalOpen(true)
+  }
+
+  const handlePriceSubmit = (payout) => {
+    setPayout(payout)
+    setIsPriceModalOpen(false)
+    setIsSummaryModalOpen(true)
+  }
+
+  const handleConfirmListing = async () => {
+    if (!walletAddress) {
+      console.error('Wallet address is not available')
+      return
+    }
+
+    if (!window.ethereum) {
+      console.error('Ethereum provider (e.g., MetaMask) is not available')
+      return
+    }
+
+    const provider = new ethers.providers.Web3Provider(window.ethereum)
+    const signer = provider.getSigner()
+    const marketplaceContract = new ethers.Contract(
+      SEATSWAP_MARKETPLACE.address,
+      SEATSWAP_MARKETPLACE.abi,
+      signer
+    )
+
+    try {
+      const tx = await marketplaceContract.mintTicket(
+        ethers.utils.parseEther(payout.toString()),
+        ethers.utils.parseEther('50'), // Airline fee
+        ethers.utils.parseEther((payout * 0.025).toString()), // Platform fee
+        ethers.utils.parseEther((payout + 50 + payout * 0.025).toString()), // Total price
+        selectedTicket.pnr,
+        selectedTicket.passengerName,
+        walletAddress
+      )
+
+      await tx.wait()
+      console.log('Ticket minted successfully:', tx.hash)
+    } catch (error) {
+      console.error('Error minting ticket:', error)
+    }
+
+    setIsSummaryModalOpen(false)
   }
 
   return (
@@ -52,11 +119,37 @@ const MyTickets = ({ walletAddress }) => {
               key={ticket.id}
               ticket={ticket}
               showResellButton={ticket.status === 'Redeemable' || ticket.status === 'Registered'}
-              onResell={handleResellTicket}
+              onResell={() => handleResellTicket(ticket)}
             />
           ))}
         </div>
       )}
+
+      <SellTicketModal
+        isOpen={isVerificationModalOpen}
+        onClose={() => setIsVerificationModalOpen(false)}
+        onConfirm={handleVerificationConfirm}
+        ticket={selectedTicket}
+      />
+
+      <SuccessModal
+        isOpen={isSuccessModalOpen}
+        onClose={() => setIsSuccessModalOpen(false)}
+        onComplete={handleSuccessComplete}
+      />
+
+      <PriceInputModal
+        isOpen={isPriceModalOpen}
+        onClose={() => setIsPriceModalOpen(false)}
+        onSubmit={handlePriceSubmit}
+      />
+
+      <SummaryModal
+        isOpen={isSummaryModalOpen}
+        onClose={() => setIsSummaryModalOpen(false)}
+        payout={payout || 0}
+        onConfirm={handleConfirmListing}
+      />
     </div>
   )
 }
