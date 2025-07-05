@@ -25,16 +25,22 @@ contract SeatSwapMarketplace is Ownable, ReentrancyGuard {
         bool ended;
     }
 
-    // Mapping from tokenId to Auction details
-    mapping(uint256 => Auction) public auctions;
+    // --- State Variables --- //
 
-    // Mapping from bidder to their pending refunds
+    // This is the correct way for the marketplace to reference the NFT contract it manages.
+    TicketNFT public ticketNFT;
+
+    mapping(string => uint256) public pnrToTokenId;
+    
+    mapping(uint256 => Auction) public auctions;
     mapping(address => uint256) public refunds;
 
-    // Reference to the deployed TicketNFT contract
-    TicketNFT[] public ticketNFTs;
-
     // --- Events --- //
+    event TicketMinted(
+        uint256 indexed tokenId,
+        address indexed owner,
+        string pnr
+    );
     event TicketListedForAuction(
         uint256 indexed tokenId,
         address indexed seller,
@@ -53,6 +59,7 @@ contract SeatSwapMarketplace is Ownable, ReentrancyGuard {
         uint256 platformFee,
         uint256 airlineFee
     );
+    event ListingCancelled(uint256 indexed tokenId);
     event RefundClaimed(address indexed beneficiary, uint256 amount);
 
     // --- Constructor --- //
@@ -60,16 +67,18 @@ contract SeatSwapMarketplace is Ownable, ReentrancyGuard {
         address initialOwner,
         address _platformTreasury,
         address _airlineTreasury,
-        uint256 _platformFeeBasisPoints
+        uint256 _platformFeeBasisPoints,
+        address _ticketNFTAddress // REFACTOR: Added NFT contract address to constructor
     ) Ownable(initialOwner) {
         require(_platformTreasury != address(0), "Platform treasury cannot be zero");
         require(_airlineTreasury != address(0), "Airline treasury cannot be zero");
-        require(_ticketNFTAddress != address(0), "TicketNFT address cannot be zero");
         require(_platformFeeBasisPoints <= 10000, "Platform fee cannot exceed 100%");
+        require(_ticketNFTAddress != address(0), "TicketNFT address cannot be zero");
 
         platformTreasury = _platformTreasury;
         airlineTreasury = _airlineTreasury;
         platformFeeBasisPoints = _platformFeeBasisPoints;
+        ticketNFT = TicketNFT(_ticketNFTAddress);
     }
 
     // --- Modifiers --- //
@@ -80,6 +89,29 @@ contract SeatSwapMarketplace is Ownable, ReentrancyGuard {
 
     // --- Core Functions --- //
 
+  
+    function mintTicket(
+        address to,
+        string calldata pnr
+    ) public nonReentrant {
+        require(pnrToTokenId[pnr] == 0, "PNR already in use");
+
+        // Example data for the new ticket details.
+        // In a real app, this would come from a trusted source or oracle.
+        address mockAirlineAddress = airlineTreasury;
+        uint256 airlineFee = 50 * 1 ether; 
+
+        uint256 newTokenId = ticketNFT.mint(
+            to,
+            pnr,    
+            mockAirlineAddress,
+            airlineFee
+        );
+
+        pnrToTokenId[pnr] = newTokenId;
+        emit TicketMinted(newTokenId, to, pnr);
+    }
+
     /**
      * @dev Allows a seller to list their NFT for auction.
      * The NFT must be approved to the marketplace contract before calling this function.
@@ -88,7 +120,7 @@ contract SeatSwapMarketplace is Ownable, ReentrancyGuard {
      */
     function listTicketForAuction(uint256 _tokenId, uint256 _initialPrice) public nonReentrant onlyTicketOwner(_tokenId) {
         require(_initialPrice > 0, "Initial price must be greater than zero");
-        require(!auctions[_tokenId].seller.isInitialized, "Ticket already listed for auction");
+        require(auctions[_tokenId].seller == address(0), "Ticket already listed for auction");
         require(ticketNFT.getApproved(_tokenId) == address(this), "NFT not approved for marketplace");
 
         // Calculate minBid as half the initial price
@@ -116,12 +148,13 @@ contract SeatSwapMarketplace is Ownable, ReentrancyGuard {
      */
     function placeBid(uint256 _tokenId) public payable nonReentrant {
         Auction storage auction = auctions[_tokenId];
-        require(auction.seller.isInitialized, "Ticket not listed for auction");
+        require(auction.seller != address(0), "Ticket not listed for auction");
         require(block.timestamp < auction.auctionEndTime, "Auction has ended");
         require(msg.sender != auction.seller, "Seller cannot bid on their own ticket");
 
         // Get ticket details from TicketNFT to calculate airline fee
-        (, , , , , , uint256 airlineFee, ) = ticketNFT.getTicketDetails(_tokenId);
+        TicketNFT.TicketDetails memory details = ticketNFT.getTicketDetails(_tokenId);
+        uint256 airlineFee = details.airlineFee;
 
         // Calculate fees for this bid
         uint256 currentPlatformFee = (msg.value * platformFeeBasisPoints) / 10000;
@@ -168,7 +201,7 @@ contract SeatSwapMarketplace is Ownable, ReentrancyGuard {
      */
     function endAuction(uint256 _tokenId) public nonReentrant {
         Auction storage auction = auctions[_tokenId];
-        require(auction.seller.isInitialized, "Ticket not listed for auction");
+        require(auction.seller != address(0), "Ticket not listed for auction");
         require(block.timestamp >= auction.auctionEndTime, "Auction has not ended yet");
         require(!auction.ended, "Auction already ended");
 
@@ -180,8 +213,8 @@ contract SeatSwapMarketplace is Ownable, ReentrancyGuard {
 
             // Pay seller (highest bid minus fees already collected)
             uint256 finalPlatformFee = (auction.highestBid * platformFeeBasisPoints) / 10000;
-            uint256 finalAirlineFee = 0; // Fees already collected per bid
-            (, , , , , , finalAirlineFee, ) = ticketNFT.getTicketDetails(_tokenId);
+            TicketNFT.TicketDetails memory details = ticketNFT.getTicketDetails(_tokenId);
+            uint256 finalAirlineFee = details.airlineFee;
 
             uint256 sellerPayout = auction.highestBid - finalPlatformFee - finalAirlineFee;
             require(sellerPayout >= 0, "Seller payout cannot be negative");
@@ -209,7 +242,7 @@ contract SeatSwapMarketplace is Ownable, ReentrancyGuard {
      */
     function cancelListing(uint256 _tokenId) public nonReentrant onlyTicketOwner(_tokenId) {
         Auction storage auction = auctions[_tokenId];
-        require(auction.seller.isInitialized, "Ticket not listed for auction");
+        require(auction.seller != address(0), "Ticket not listed for auction");
         require(auction.highestBid == 0, "Cannot cancel auction with bids");
         require(auction.seller == msg.sender, "Only the seller can cancel this listing");
 
