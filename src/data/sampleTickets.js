@@ -103,7 +103,7 @@ export const userTickets = [
     },
     date: "2024-08-22",
     price: 680,
-    status: "Available"
+    status: "Registered"
   }
 ]
 

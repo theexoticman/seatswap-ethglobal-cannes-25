@@ -1,9 +1,27 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { useLocation } from 'react-router-dom'
 import TicketCard from './TicketCard'
-import { userTickets } from '../data/sampleTickets'
+import { userTickets } from '@/data/sampleTickets'
 
-const MyTickets = () => {
-  const [tickets] = useState(userTickets)
+const MyTickets = ({ walletAddress }) => {
+  const location = useLocation()
+  const [tickets, setTickets] = useState([])
+
+  useEffect(() => {
+    if (walletAddress) {
+      // Mock: Show all user tickets when wallet is connected
+      setTickets(userTickets)
+    } else {
+      setTickets([])
+    }
+  }, [walletAddress])
+
+  useEffect(() => {
+    if (location.state?.foundTicket) {
+      // Add the found ticket to the list of tickets
+      setTickets(prevTickets => [...prevTickets, location.state.foundTicket])
+    }
+  }, [location.state])
 
   const handleResellTicket = (ticket) => {
     console.log('Resell ticket:', ticket)
@@ -33,7 +51,7 @@ const MyTickets = () => {
             <TicketCard
               key={ticket.id}
               ticket={ticket}
-              showResellButton={ticket.status === 'Redeemable' || ticket.status === 'Available'}
+              showResellButton={ticket.status === 'Redeemable' || ticket.status === 'Registered'}
               onResell={handleResellTicket}
             />
           ))}

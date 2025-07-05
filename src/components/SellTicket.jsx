@@ -8,7 +8,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plane, Calendar, DollarSign, MapPin, Clock } from 'lucide-react'
 import ConfirmationModal from './ConfirmationModal'
 import TicketDetailsModal from './TicketDetailsModal'
-import { marketplaceTickets } from '@/data/sampleTickets'
 
 const SellTicket = () => {
   const [formData, setFormData] = useState({
@@ -62,25 +61,29 @@ const SellTicket = () => {
   const handleConfirmFind = async () => {
     setModalState(prev => ({ ...prev, isLoading: true }))
     
-    // Find ticket by PNR (using first ticket as example)
-    const foundTicket = marketplaceTickets.find(ticket => 
-      ticket.id === 1 // Replace with actual PNR lookup logic
-    )
+    // Mock API call to fetch flight details
+    const mockResponse = {
+      airline: "Air France",
+      departure: {
+        code: "NCE",
+        city: "Paris",
+        time: "2025-07-07T14:30:00Z"
+      },
+      arrival: {
+        code: "JFK",
+        city: "New York",
+        time: "2025-07-15T17:45:00Z"
+      },
+      date: "2025-07-15",
+      price: 450,
+      status: "Available"
+    }
 
     setTimeout(() => {
-      if (foundTicket) {
-        setTicketDetails({
-          isOpen: true,
-          ticket: foundTicket
-        })
-      } else {
-        // Handle case where ticket is not found
-        setModalState({
-          isOpen: true,
-          type: 'error',
-          isLoading: false
-        })
-      }
+      setTicketDetails({
+        isOpen: true,
+        ticket: mockResponse
+      })
     }, 2000)
   }
 

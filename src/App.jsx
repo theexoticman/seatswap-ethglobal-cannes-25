@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Button } from '@/components/ui/button.jsx'
 import { Plane, Ticket, Plus } from 'lucide-react'
 import './App.css'
 import Header from './components/Header'
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
 
 // Import page components (we'll create these)
 import Marketplace from './components/Marketplace'
@@ -11,19 +12,29 @@ import SellTicket from './components/SellTicket'
 
 function App() {
   const [activeTab, setActiveTab] = useState('marketplace')
+  const [walletAddress, setWalletAddress] = useState(null)
 
   const tabs = [
-    { id: 'marketplace', label: 'Marketplace', icon: Plane },
-    { id: 'my-tickets', label: 'My Tickets', icon: Ticket },
-    { id: 'sell-ticket', label: 'Sell Ticket', icon: Plus }
+    { id: 'marketplace', label: 'Marketplace' },
+    { id: 'my-tickets', label: 'My Tickets' },
+    { id: 'sell-ticket', label: 'Sell Ticket' }
   ]
+
+  const handleTabChange = (tabId) => {
+    setActiveTab(tabId)
+  }
+
+  const handleWalletConnect = (address) => {
+    setWalletAddress(address)
+    setActiveTab('my-tickets')
+  }
 
   const renderContent = () => {
     switch (activeTab) {
       case 'marketplace':
         return <Marketplace />
       case 'my-tickets':
-        return <MyTickets />
+        return <MyTickets walletAddress={walletAddress} />
       case 'sell-ticket':
         return <SellTicket />
       default:
@@ -31,40 +42,49 @@ function App() {
     }
   }
 
+  // Debugging: Log activeTab changes
+  useEffect(() => {
+  }, [activeTab])
+
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      
-      {/* Navigation Tabs */}
-      <nav className="border-b border-border bg-card">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex space-x-8">
-            {tabs.map((tab) => {
-              const Icon = tab.icon
-              return (
+    <Router>
+      <div className="min-h-screen bg-background">
+        <Header 
+          activeTab={activeTab} 
+          onTabChange={handleTabChange} 
+          onWalletConnect={handleWalletConnect} 
+          walletAddress={walletAddress} 
+        />
+        
+        {/* Navigation Tabs */}
+        <div className="border-b border-border">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <nav className="-mb-px flex space-x-8">
+              {tabs.map(tab => (
                 <button
                   key={tab.id}
-                  onClick={() => setActiveTab(tab.id)}
-                  className={`flex items-center space-x-2 py-4 px-1 border-b-2 font-medium text-sm transition-colors ${
+                  onClick={() => handleTabChange(tab.id)}
+                  className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm ${
                     activeTab === tab.id
                       ? 'border-primary text-primary'
-                      : 'border-transparent text-muted-foreground hover:text-foreground hover:border-border'
+                      : 'border-transparent text-muted-foreground hover:text-foreground'
                   }`}
                 >
-                  <Icon className="w-4 h-4" />
-                  <span>{tab.label}</span>
+                  {tab.label}
                 </button>
-              )
-            })}
+              ))}
+            </nav>
           </div>
         </div>
-      </nav>
 
-      {/* Main Content */}
-      <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {renderContent()}
-      </main>
-    </div>
+        {/* Main Content */}
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+          <Routes>
+            <Route path="/" element={renderContent()} />
+          </Routes>
+        </main>
+      </div>
+    </Router>
   )
 }
 

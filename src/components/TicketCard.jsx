@@ -17,7 +17,9 @@ const TicketCard = ({
     date,
     price,
     status,
-    currentBid
+    currentBid,
+    ticketType = 'Economy',
+    isRefundable = false
   } = ticket
 
   const formatDate = (dateString) => {
@@ -78,6 +80,14 @@ const TicketCard = ({
       <div className="flex items-center space-x-2 mb-4 text-muted-foreground">
         <Calendar className="w-4 h-4" />
         <span className="text-sm">{formatDate(date)}</span>
+      </div>
+
+      {/* Ticket Type and Options */}
+      <div className="flex items-center space-x-2 mb-4 text-muted-foreground">
+        <span className="text-sm">{ticketType}</span>
+        {!isRefundable && (
+          <span className="text-sm text-red-500">• Not Refundable</span>
+        )}
       </div>
 
       {/* Price and Actions */}
