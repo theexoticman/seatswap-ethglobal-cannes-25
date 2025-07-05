@@ -6,8 +6,10 @@ import SellTicketModal from './SellTicketModal'
 import PriceInputModal from './PriceInputModal'
 import SuccessModal from './SuccessModal'
 import SummaryModal from './SummaryModal'
+import MintingSuccessModal from './MintingSuccessModal'
 import { userTickets } from '@/data/sampleTickets'
-import { SEATSWAP_MARKETPLACE } from '@/config'
+import { marketplaceAddress, marketplaceAbi } from '@/contract-config'
+import { toast } from 'sonner'
 
 const MyTickets = ({ walletAddress }) => {
   const location = useLocation()
@@ -16,8 +18,10 @@ const MyTickets = ({ walletAddress }) => {
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false)
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false)
+  const [isMintingSuccessModalOpen, setIsMintingSuccessModalOpen] = useState(false)
   const [selectedTicket, setSelectedTicket] = useState(null)
   const [payout, setPayout] = useState(null)
+  const [mintingTxHash, setMintingTxHash] = useState(null)
 
   useEffect(() => {
     if (walletAddress) {
@@ -57,42 +61,43 @@ const MyTickets = ({ walletAddress }) => {
   }
 
   const handleConfirmListing = async () => {
-    if (!walletAddress) {
-      console.error('Wallet address is not available')
-      return
+    if (!walletAddress || !selectedTicket) {
+      toast.error("Wallet not connected or no ticket selected.");
+      return;
+    }
+    if (typeof window.ethereum === "undefined") {
+      toast.error("Please install MetaMask to use this feature.");
+      return;
     }
 
-    if (!window.ethereum) {
-      console.error('Ethereum provider (e.g., MetaMask) is not available')
-      return
-    }
-
-    const provider = new ethers.providers.Web3Provider(window.ethereum)
-    const signer = provider.getSigner()
-    const marketplaceContract = new ethers.Contract(
-      SEATSWAP_MARKETPLACE.address,
-      SEATSWAP_MARKETPLACE.abi,
-      signer
-    )
+    setIsSummaryModalOpen(false);
+    const toastId = toast.loading("Minting your ticket NFT... Please wait.");
 
     try {
-      const tx = await marketplaceContract.mintTicket(
-        ethers.utils.parseEther(payout.toString()),
-        ethers.utils.parseEther('50'), // Airline fee
-        ethers.utils.parseEther((payout * 0.025).toString()), // Platform fee
-        ethers.utils.parseEther((payout + 50 + payout * 0.025).toString()), // Total price
-        selectedTicket.pnr,
-        selectedTicket.passengerName,
-        walletAddress
-      )
+      const provider = new ethers.BrowserProvider(window.ethereum);
+      const signer = await provider.getSigner();
+      const marketplaceContract = new ethers.Contract(
+        marketplaceAddress,
+        marketplaceAbi,
+        signer
+      );
+      
+      const pnr = `PNR-${selectedTicket.id}-${Date.now()}`; // Create a unique PNR
+      
+      const tx = await marketplaceContract.mintTicket(walletAddress, pnr);
+      await tx.wait();
+      
+      toast.dismiss(toastId);
+      setMintingTxHash(tx.hash);
+      setIsMintingSuccessModalOpen(true);
 
-      await tx.wait()
-      console.log('Ticket minted successfully:', tx.hash)
     } catch (error) {
-      console.error('Error minting ticket:', error)
+      console.error('Error minting ticket:', error);
+      toast.error("Minting Failed", {
+        id: toastId,
+        description: error.reason || "An unexpected error occurred.",
+      });
     }
-
-    setIsSummaryModalOpen(false)
   }
 
   return (
@@ -149,6 +154,12 @@ const MyTickets = ({ walletAddress }) => {
         onClose={() => setIsSummaryModalOpen(false)}
         payout={payout || 0}
         onConfirm={handleConfirmListing}
+      />
+
+      <MintingSuccessModal
+        isOpen={isMintingSuccessModalOpen}
+        onClose={() => setIsMintingSuccessModalOpen(false)}
+        txHash={mintingTxHash}
       />
     </div>
   )

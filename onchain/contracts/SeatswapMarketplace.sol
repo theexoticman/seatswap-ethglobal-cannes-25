@@ -118,10 +118,16 @@ contract SeatSwapMarketplace is Ownable, ReentrancyGuard {
      * @param _tokenId The ID of the NFT to list.
      * @param _initialPrice The initial fixed price of the ticket (used to calculate minBid).
      */
-    function listTicketForAuction(uint256 _tokenId, uint256 _initialPrice) public nonReentrant onlyTicketOwner(_tokenId) {
+    function listTicketForAuction(uint256 _tokenId, uint256 _initialPrice) public payable nonReentrant onlyTicketOwner(_tokenId) {
         require(_initialPrice > 0, "Initial price must be greater than zero");
         require(auctions[_tokenId].seller == address(0), "Ticket already listed for auction");
         require(ticketNFT.getApproved(_tokenId) == address(this), "NFT not approved for marketplace");
+
+        // --- FEE ON TRANSFER LOGIC ---
+        TicketNFT.TicketDetails memory details = ticketNFT.getTicketDetails(_tokenId);
+        require(msg.value == details.airlineFee, "Must send exact airline fee to list");
+        payable(airlineTreasury).transfer(msg.value);
+        // --- END FEE LOGIC ---
 
         // Calculate minBid as half the initial price
         uint256 calculatedMinBid = _initialPrice / 2;

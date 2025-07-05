@@ -2,10 +2,12 @@
 pragma solidity ^0.8.20;
 
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
-import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/access/AccessControl.sol";
 import "@openzeppelin/contracts/utils/ReentrancyGuard.sol";
 
-contract TicketNFT is ERC721, Ownable, ReentrancyGuard {
+contract TicketNFT is ERC721, AccessControl, ReentrancyGuard {
+    bytes32 public constant MINTER_ROLE = keccak256("MINTER_ROLE");
+
     // --- Data Structures --- //
     struct TicketDetails {
         string pnr;
@@ -28,13 +30,10 @@ contract TicketNFT is ERC721, Ownable, ReentrancyGuard {
     event TicketRedeemed(uint256 indexed tokenId);
 
     constructor(
-        address initialOwner,
-        address _marketplaceAddress
-    ) ERC721("TicketNFT", "TKT") Ownable(initialOwner) {
-        // Allow zero address only during deployment, it will be set correctly later.
-        if (_marketplaceAddress != address(0)) {
-            marketplaceAddress = _marketplaceAddress;
-        }
+        address initialOwner
+    ) ERC721("TicketNFT", "TKT") {
+        _grantRole(DEFAULT_ADMIN_ROLE, initialOwner);
+        _grantRole(MINTER_ROLE, initialOwner); // Grant minter role to deployer initially
     }
 
     function mint(
@@ -42,7 +41,7 @@ contract TicketNFT is ERC721, Ownable, ReentrancyGuard {
         string memory _pnr,
         address _airlineAddress,
         uint256 _airlineFee
-    ) public onlyOwner returns (uint256) {
+    ) public onlyRole(MINTER_ROLE) returns (uint256) {
         _nextTokenId++;
         uint256 newTokenId = _nextTokenId;
         _safeMint(to, newTokenId);
@@ -69,9 +68,13 @@ contract TicketNFT is ERC721, Ownable, ReentrancyGuard {
         emit TicketRedeemed(tokenId);
     }
     
-    function setMarketplaceAddress(address _newMarketplaceAddress) public onlyOwner {
+    function setMarketplaceAddress(address _newMarketplaceAddress) public onlyRole(DEFAULT_ADMIN_ROLE) {
         require(_newMarketplaceAddress != address(0), "New marketplace address cannot be zero");
         marketplaceAddress = _newMarketplaceAddress;
     }
 
+    // The following is required for AccessControl
+    function supportsInterface(bytes4 interfaceId) public view virtual override(ERC721, AccessControl) returns (bool) {
+        return super.supportsInterface(interfaceId);
+    }
 }

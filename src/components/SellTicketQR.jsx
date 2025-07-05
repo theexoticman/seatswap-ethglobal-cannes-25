@@ -1,7 +1,8 @@
-import { SelfAppBuilder, SelfQRcodeWrapper } from "@selfxyz/qrcode";
+import { SelfAppBuilder, SelfQRcode } from "@selfxyz/qrcode";
 import React, { useState, forwardRef, useEffect } from "react";
 import { keccak256 } from "ethers";
 import { toast } from 'sonner'
+import { v4 as uuidv4 } from 'uuid';
 
 const SellTicketQRComponent = ({ ticket, onVerified }, ref) => {
   const [app, setApp] = useState(null);
@@ -13,32 +14,36 @@ const SellTicketQRComponent = ({ ticket, onVerified }, ref) => {
       const endpoint = import.meta.env.VITE_SELF_ENDPOINT;
 
       if (!scope || !endpoint) {
-          const errorMessage = "VITE_SELF_SCOPE or VITE_SELF_ENDPOINT is not defined. Please check your .env.local file and restart the server.";
-          setError(errorMessage);
-          return;
+        const errorMessage = "VITE_SELF_SCOPE or VITE_SELF_ENDPOINT is not defined. Please check your .env.local file and restart the server.";
+        setError(errorMessage);
+        return;
       }
-      
+
       if (!ticket.sellerWallet) {
-          const errorMessage = "Ticket is missing a 'sellerWallet' property.";
-          setError(errorMessage);
-          return;
+        const errorMessage = "Ticket is missing a 'sellerWallet' property.";
+        setError(errorMessage);
+        return;
       }
 
       const hash = keccak256(
         new TextEncoder().encode(`${ticket.airline}-${ticket.id}-${ticket.date}`)
       );
+      
       const builder = new SelfAppBuilder({
         version: 2,
-        appName: "SeatSwap",
-        scope:    scope,
+        appName: "seatswap",
+        scope: scope,
         endpoint: endpoint,
         endpointType: "staging_https",
         logoBase64: "",
-        userId:   ticket.sellerWallet,
-        userIdType: "hex",
+        userId: uuidv4(),
+        userIdType: "uuid",
         userDefinedData: hash.slice(2).padEnd(128, "0"),
-        disclosures: { minimumAge: 18 }
+        disclosures: {
+          minimumAge: 18
+        },
       }).build();
+
       setApp(builder);
     }
   }, [ticket, app, error]);
@@ -53,7 +58,7 @@ const SellTicketQRComponent = ({ ticket, onVerified }, ref) => {
 
   return (
     <div ref={ref}>
-      <SelfQRcodeWrapper
+      <SelfQRcode
         selfApp={app}
         onSuccess={() => {
           toast.success("Identity verified ✔");

@@ -8,9 +8,7 @@ const SellTicketModal = ({ isOpen, onClose, onConfirm, ticket }) => {
 
   // Reset verification status when the modal is closed
   useEffect(() => {
-    if (!isOpen) {
-      setTimeout(() => setIsVerified(true), 3000) // Reset after closing animation
-    }
+    
   }, [isOpen])
 
   const handleConfirmClick = () => {
