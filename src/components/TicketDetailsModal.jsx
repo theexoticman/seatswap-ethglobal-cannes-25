@@ -40,7 +40,7 @@ const TicketDetailsModal = ({
           <Button 
             onClick={onSell}
           >
-            Import Reservation
+            Verify Identity with Self.xyz
           </Button>
         </div>
       </DialogContent>

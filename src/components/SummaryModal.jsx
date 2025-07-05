@@ -39,7 +39,7 @@ const SummaryModal = ({ isOpen, onClose, payout, onConfirm }) => {
             <Button variant="outline" onClick={onClose}>
               Edit
             </Button>
-            <Button onClick={onConfirm}>Confirm Listing</Button>
+            <Button onClick={onConfirm}>Mint NFT</Button>
           </div>
         </div>
       </DialogContent>

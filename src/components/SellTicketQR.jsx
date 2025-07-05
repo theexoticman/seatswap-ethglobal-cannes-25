@@ -39,9 +39,8 @@ const SellTicketQRComponent = ({ ticket, onVerified }, ref) => {
         userDefinedData: hash.slice(2).padEnd(128, "0"),
         disclosures: {
           minimumAge: 18,
-          passportNumber: true,
-          name: true,
-          expiryDate: true
+          excludedCountries: ['PRK'],
+          name: true
         },
       }).build();
 

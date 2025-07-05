@@ -3,7 +3,9 @@ import { Button } from '@/components/ui/button.jsx'
 import { Plane, Ticket, Plus } from 'lucide-react'
 import './App.css'
 import Header from './components/Header'
-import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
+import { Toaster } from "@/components/ui/sonner"
+import { userTickets as initialUserTickets } from './data/sampleTickets'
 
 // Import page components (we'll create these)
 import Marketplace from './components/Marketplace'
@@ -13,6 +15,7 @@ import SellTicket from './components/SellTicket'
 function App() {
   const [activeTab, setActiveTab] = useState('marketplace')
   const [walletAddress, setWalletAddress] = useState(null)
+  const [userTickets, setUserTickets] = useState(initialUserTickets)
 
   const tabs = [
     { id: 'marketplace', label: 'Marketplace' },
@@ -29,14 +32,21 @@ function App() {
     setActiveTab('my-tickets')
   }
 
+  const addTicket = (newTicket) => {
+    // Prevent adding duplicate tickets
+    if (!userTickets.find(ticket => ticket.id === newTicket.id)) {
+      setUserTickets(prevTickets => [...prevTickets, newTicket])
+    }
+  }
+
   const renderContent = () => {
     switch (activeTab) {
       case 'marketplace':
         return <Marketplace />
       case 'my-tickets':
-        return <MyTickets walletAddress={walletAddress} />
+        return <MyTickets userTickets={userTickets} />
       case 'sell-ticket':
-        return <SellTicket />
+        return <SellTicket addTicket={addTicket} />
       default:
         return <Marketplace />
     }
@@ -57,17 +67,17 @@ function App() {
         />
         
         {/* Navigation Tabs */}
-        <div className="border-b border-border">
+        <div className="border-b border-border pt-4">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <nav className="-mb-px flex space-x-8">
               {tabs.map(tab => (
                 <button
                   key={tab.id}
                   onClick={() => handleTabChange(tab.id)}
-                  className={`whitespace-nowrap pb-4 px-1 border-b-2 font-medium text-sm ${
+                  className={`whitespace-nowrap py-4 px-3 border-b-2 font-semibold text-lg transition-colors duration-200 ${
                     activeTab === tab.id
                       ? 'border-primary text-primary'
-                      : 'border-transparent text-muted-foreground hover:text-foreground'
+                      : 'border-transparent text-muted-foreground hover:text-foreground hover:border-gray-300'
                   }`}
                 >
                   {tab.label}
@@ -80,7 +90,9 @@ function App() {
         {/* Main Content */}
         <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
           <Routes>
-            <Route path="/" element={renderContent()} />
+            <Route path="/" element={<Navigate to="/my-tickets" />} />
+            <Route path="/sell-ticket" element={renderContent()} />
+            <Route path="/my-tickets" element={renderContent()} />
           </Routes>
         </main>
       </div>

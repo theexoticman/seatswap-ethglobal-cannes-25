@@ -38,7 +38,7 @@ const Header = ({ activeTab, onTabChange, onWalletConnect, walletAddress }) => {
           
           {/* Subtitle */}
           <div className="flex-1 text-center">
-            <p className="text-sm text-muted-foreground">Your flight ticket marketplace</p>
+            <p className="text-sm text-muted-foreground">Creating A More Liquid Market for Flight Tickets</p>
           </div>
 
           {/* Wallet and Tabs */}

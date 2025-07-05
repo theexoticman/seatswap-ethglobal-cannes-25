@@ -7,30 +7,20 @@ import PriceInputModal from './PriceInputModal'
 import SuccessModal from './SuccessModal'
 import SummaryModal from './SummaryModal'
 import MintingSuccessModal from './MintingSuccessModal'
-import { userTickets } from '@/data/sampleTickets'
 import { marketplaceAddress, marketplaceAbi } from '@/contract-config'
 import { toast } from 'sonner'
 
-const MyTickets = ({ walletAddress }) => {
+const MyTickets = ({ userTickets }) => {
   const location = useLocation()
-  const [tickets, setTickets] = useState([])
+  const [tickets, setTickets] = useState(userTickets)
   const [isVerificationModalOpen, setIsVerificationModalOpen] = useState(false)
   const [isSuccessModalOpen, setIsSuccessModalOpen] = useState(false)
   const [isPriceModalOpen, setIsPriceModalOpen] = useState(false)
   const [isSummaryModalOpen, setIsSummaryModalOpen] = useState(false)
   const [isMintingSuccessModalOpen, setIsMintingSuccessModalOpen] = useState(false)
   const [selectedTicket, setSelectedTicket] = useState(null)
-  const [payout, setPayout] = useState(null)
-  const [mintingTxHash, setMintingTxHash] = useState(null)
-
-  useEffect(() => {
-    if (walletAddress) {
-      // Mock: Show all user tickets when wallet is connected
-      setTickets(userTickets)
-    } else {
-      setTickets([])
-    }
-  }, [walletAddress])
+  const [listingPrice, setListingPrice] = useState(null)
+  const [transactionHash, setTransactionHash] = useState(null)
 
   useEffect(() => {
     if (location.state?.foundTicket) {
@@ -39,64 +29,42 @@ const MyTickets = ({ walletAddress }) => {
     }
   }, [location.state])
 
-  const handleResellTicket = (ticket) => {
+  const handleResellClick = (ticket) => {
     setSelectedTicket(ticket)
-    setIsVerificationModalOpen(true)
-  }
-
-  const handleVerificationConfirm = () => {
-    setIsVerificationModalOpen(false)
-    setIsSuccessModalOpen(true)
-  }
-
-  const handleSuccessComplete = () => {
-    setIsSuccessModalOpen(false)
     setIsPriceModalOpen(true)
   }
 
-  const handlePriceSubmit = (payout) => {
-    setPayout(payout)
+  const handlePriceSubmit = (price) => {
+    setListingPrice(price)
     setIsPriceModalOpen(false)
     setIsSummaryModalOpen(true)
   }
 
   const handleConfirmListing = async () => {
-    if (!walletAddress || !selectedTicket) {
-      toast.error("Wallet not connected or no ticket selected.");
-      return;
-    }
-    if (typeof window.ethereum === "undefined") {
-      toast.error("Please install MetaMask to use this feature.");
-      return;
-    }
-
-    setIsSummaryModalOpen(false);
-    const toastId = toast.loading("Minting your ticket NFT... Please wait.");
+    setIsSummaryModalOpen(false)
+    toast.info("Minting ticket as an NFT... Please confirm in your wallet.")
 
     try {
-      const provider = new ethers.BrowserProvider(window.ethereum);
-      const signer = await provider.getSigner();
-      const marketplaceContract = new ethers.Contract(
-        marketplaceAddress,
-        marketplaceAbi,
-        signer
-      );
-      
-      const pnr = `PNR-${selectedTicket.id}-${Date.now()}`; // Create a unique PNR
-      
-      const tx = await marketplaceContract.mintTicket(walletAddress, pnr);
-      await tx.wait();
-      
-      toast.dismiss(toastId);
-      setMintingTxHash(tx.hash);
-      setIsMintingSuccessModalOpen(true);
+      const provider = new ethers.BrowserProvider(window.ethereum)
+      const signer = await provider.getSigner()
+      const marketplaceContract = new ethers.Contract(marketplaceAddress, marketplaceAbi, signer)
 
+      // We need a PNR for the mint function. Let's create one from the ticket details.
+      const pnr = `${selectedTicket.airline.slice(0, 3).toUpperCase()}-${selectedTicket.id}`
+      
+      const tx = await marketplaceContract.mintTicket(signer.address, pnr)
+      
+      toast.loading("Waiting for transaction confirmation...")
+      const receipt = await tx.wait()
+
+      setTransactionHash(receipt.hash)
+      setIsMintingSuccessModalOpen(true)
+
+      // You might want to update the ticket status here
+      // e.g., by calling a function passed from App.jsx
     } catch (error) {
-      console.error('Error minting ticket:', error);
-      toast.error("Minting Failed", {
-        id: toastId,
-        description: error.reason || "An unexpected error occurred.",
-      });
+      console.error("NFT Minting failed:", error)
+      toast.error("NFT Minting failed. Please check the console for details.")
     }
   }
 
@@ -124,7 +92,7 @@ const MyTickets = ({ walletAddress }) => {
               key={ticket.id}
               ticket={ticket}
               showResellButton={ticket.status === 'Redeemable' || ticket.status === 'Registered'}
-              onResell={() => handleResellTicket(ticket)}
+              onResell={() => handleResellClick(ticket)}
             />
           ))}
         </div>
@@ -133,33 +101,36 @@ const MyTickets = ({ walletAddress }) => {
       <SellTicketModal
         isOpen={isVerificationModalOpen}
         onClose={() => setIsVerificationModalOpen(false)}
-        onConfirm={handleVerificationConfirm}
+        onConfirm={() => {}}
         ticket={selectedTicket}
       />
 
       <SuccessModal
         isOpen={isSuccessModalOpen}
         onClose={() => setIsSuccessModalOpen(false)}
-        onComplete={handleSuccessComplete}
+        onComplete={() => {}}
       />
 
-      <PriceInputModal
-        isOpen={isPriceModalOpen}
-        onClose={() => setIsPriceModalOpen(false)}
-        onSubmit={handlePriceSubmit}
-      />
+      {selectedTicket && (
+        <PriceInputModal
+          isOpen={isPriceModalOpen}
+          onClose={() => setIsPriceModalOpen(false)}
+          onSubmit={handlePriceSubmit}
+          ticket={selectedTicket}
+        />
+      )}
 
       <SummaryModal
         isOpen={isSummaryModalOpen}
         onClose={() => setIsSummaryModalOpen(false)}
-        payout={payout || 0}
         onConfirm={handleConfirmListing}
+        payout={listingPrice || 0}
       />
 
       <MintingSuccessModal
         isOpen={isMintingSuccessModalOpen}
         onClose={() => setIsMintingSuccessModalOpen(false)}
-        txHash={mintingTxHash}
+        transactionHash={transactionHash}
       />
     </div>
   )

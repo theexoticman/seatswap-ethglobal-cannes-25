@@ -23,9 +23,8 @@ export class KVConfigStore implements IConfigStorage {
   async getConfig(id: string): Promise<VerificationConfig> {
     const config = {
       minimumAge: 18,
-      name: true,
-      passportNumber: true,
-      expiryDate: true
+      excludedCountries: ['PRK'],
+      name: true
     } as VerificationConfig;
     return config;
   }

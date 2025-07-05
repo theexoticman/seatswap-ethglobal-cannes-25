@@ -94,7 +94,6 @@ contract SeatSwapMarketplace is Ownable, ReentrancyGuard {
         address to,
         string calldata pnr
     ) public nonReentrant {
-        require(pnrToTokenId[pnr] == 0, "PNR already in use");
 
         // Example data for the new ticket details.
         // In a real app, this would come from a trusted source or oracle.

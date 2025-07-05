@@ -9,8 +9,9 @@ import { Plane, Calendar, DollarSign, MapPin, Clock } from 'lucide-react'
 import ConfirmationModal from './ConfirmationModal'
 import TicketDetailsModal from './TicketDetailsModal'
 import { userTickets } from '../data/sampleTickets'
+import SellTicketModal from './SellTicketModal'
 
-const SellTicket = () => {
+const SellTicket = ({ addTicket }) => {
   const [formData, setFormData] = useState({
     pnr: '',
     lastName: ''
@@ -27,6 +28,8 @@ const SellTicket = () => {
     isOpen: false,
     ticket: null
   })
+
+  const [isVerificationOpen, setIsVerificationOpen] = useState(false)
 
   const handleInputChange = (field, value) => {
     setFormData(prev => ({
@@ -75,6 +78,11 @@ const SellTicket = () => {
     }, 2000)
   }
 
+  const handleImportTicket = () => {
+    setTicketDetails({ isOpen: false, ticket: ticketDetails.ticket })
+    setIsVerificationOpen(true)
+  }
+
   const handleConfirmDetails = async () => {
     setModalState(prev => ({ ...prev, isLoading: true }))
     
@@ -86,6 +94,11 @@ const SellTicket = () => {
         type: 'success',
         isLoading: false
       })
+      // Reset form
+      setFormData({
+        pnr: '',
+        lastName: ''
+      })
     }, 2000)
   }
 
@@ -94,15 +107,6 @@ const SellTicket = () => {
       isOpen: false,
       type: null,
       isLoading: false
-    })
-  }
-
-  const handleSuccessConfirm = () => {
-    handleCloseModal()
-    // Reset form
-    setFormData({
-      pnr: '',
-      lastName: ''
     })
   }
 
@@ -180,6 +184,20 @@ const SellTicket = () => {
       <TicketDetailsModal
         isOpen={ticketDetails.isOpen}
         onClose={handleCloseTicketDetails}
+        onSell={handleImportTicket}
+        ticket={ticketDetails.ticket}
+      />
+
+      <SellTicketModal
+        isOpen={isVerificationOpen}
+        onClose={() => setIsVerificationOpen(false)}
+        onConfirm={() => {
+          if (ticketDetails.ticket) {
+            addTicket({ ...ticketDetails.ticket, status: 'Registered' });
+          }
+          setIsVerificationOpen(false);
+          console.log("Ticket imported and identity verified!");
+        }}
         ticket={ticketDetails.ticket}
       />
     </div>
