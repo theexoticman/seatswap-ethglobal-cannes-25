@@ -2,20 +2,19 @@ import React, { useEffect } from 'react'
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { CheckCircle } from 'lucide-react'
 
-const SuccessModal = ({ isOpen, onClose, onComplete }) => {
+const SuccessModal = ({ isOpen, onComplete }) => {
   useEffect(() => {
     if (isOpen) {
       const timer = setTimeout(() => {
         onComplete()
       }, 5000) // 5-second timer
 
-      // Clear the timer if the component unmounts or isOpen changes
       return () => clearTimeout(timer)
     }
   }, [isOpen, onComplete])
 
   return (
-    <Dialog open={isOpen} onOpenChange={onClose}>
+    <Dialog open={isOpen}>
       <DialogContent>
         {/* These are for screen readers and are visually hidden */}
         <DialogTitle className="sr-only">Verification Successful</DialogTitle>

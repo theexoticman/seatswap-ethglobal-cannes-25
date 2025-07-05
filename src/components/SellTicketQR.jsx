@@ -1,4 +1,4 @@
-import { SelfAppBuilder, SelfQRcode } from "@selfxyz/qrcode";
+import { SelfAppBuilder, SelfQRcodeWrapper } from "@selfxyz/qrcode";
 import React, { useState, forwardRef, useEffect } from "react";
 import { keccak256 } from "ethers";
 import { toast } from 'sonner'
@@ -9,19 +9,17 @@ const SellTicketQRComponent = ({ ticket, onVerified }, ref) => {
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    if (ticket && !app && !error) {
+    if (ticket) {
       const scope = import.meta.env.VITE_SELF_SCOPE;
       const endpoint = import.meta.env.VITE_SELF_ENDPOINT;
 
       if (!scope || !endpoint) {
-        const errorMessage = "VITE_SELF_SCOPE or VITE_SELF_ENDPOINT is not defined. Please check your .env.local file and restart the server.";
-        setError(errorMessage);
+        setError("VITE_SELF_SCOPE or VITE_SELF_ENDPOINT is not defined.");
         return;
       }
 
       if (!ticket.sellerWallet) {
-        const errorMessage = "Ticket is missing a 'sellerWallet' property.";
-        setError(errorMessage);
+        setError("Ticket is missing a 'sellerWallet' property.");
         return;
       }
 
@@ -47,7 +45,7 @@ const SellTicketQRComponent = ({ ticket, onVerified }, ref) => {
 
       setApp(builder);
     }
-  }, [ticket, app, error]);
+  }, [ticket]);
 
   if (error) {
     return <p className="text-sm text-red-500 p-4 bg-red-50 rounded-md">{error}</p>;
@@ -59,13 +57,14 @@ const SellTicketQRComponent = ({ ticket, onVerified }, ref) => {
 
   return (
     <div ref={ref}>
-      <SelfQRcode
+      <SelfQRcodeWrapper
         selfApp={app}
         onSuccess={() => {
-          toast.success("Identity verified ✔");
-          onVerified(true);
+          console.log("onSuccess from SelfQRcodeWrapper received and ignored.");
         }}
-        onError={(e) => toast.error(`Verification failed: ${e.message}`)}
+        onError={(e) => {
+          toast.error(`Verification failed: ${e.message}`);
+        }}
       />
     </div>
   );
