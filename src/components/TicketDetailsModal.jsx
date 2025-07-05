@@ -7,6 +7,7 @@ import { marketplaceTickets } from '@/data/sampleTickets'
 const TicketDetailsModal = ({ 
   isOpen, 
   onClose, 
+  onSell,
   ticket 
 }) => {
   // Use sample ticket if no specific ticket is provided
@@ -29,12 +30,17 @@ const TicketDetailsModal = ({
           </div>
         )}
 
-        <div className="flex justify-end mt-6">
+        <div className="flex justify-end space-x-4 mt-6">
           <Button 
             variant="outline" 
             onClick={onClose}
           >
             Close
+          </Button>
+          <Button 
+            onClick={onSell}
+          >
+            Import Reservation
           </Button>
         </div>
       </DialogContent>

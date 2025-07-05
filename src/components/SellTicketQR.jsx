@@ -26,7 +26,7 @@ const SellTicketQRComponent = ({ ticket, onVerified }, ref) => {
       const hash = keccak256(
         new TextEncoder().encode(`${ticket.airline}-${ticket.id}-${ticket.date}`)
       );
-      
+
       const builder = new SelfAppBuilder({
         version: 2,
         appName: "SeatSwap",
@@ -39,7 +39,9 @@ const SellTicketQRComponent = ({ ticket, onVerified }, ref) => {
         userDefinedData: hash.slice(2).padEnd(128, "0"),
         disclosures: {
           minimumAge: 18,
-          excludedCountries: ['PRK']
+          passportNumber: true,
+          name: true,
+          expiryDate: true
         },
       }).build();
 

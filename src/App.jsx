@@ -16,8 +16,8 @@ function App() {
 
   const tabs = [
     { id: 'marketplace', label: 'Marketplace' },
-    { id: 'my-tickets', label: 'My Tickets' },
-    { id: 'sell-ticket', label: 'Sell Ticket' }
+    { id: 'my-tickets', label: 'My Tickets - Sell Ticket' },
+    { id: 'sell-ticket', label: 'Import Reservation' }
   ]
 
   const handleTabChange = (tabId) => {

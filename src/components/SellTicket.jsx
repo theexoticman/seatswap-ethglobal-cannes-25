@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plane, Calendar, DollarSign, MapPin, Clock } from 'lucide-react'
 import ConfirmationModal from './ConfirmationModal'
 import TicketDetailsModal from './TicketDetailsModal'
+import { userTickets } from '../data/sampleTickets'
 
 const SellTicket = () => {
   const [formData, setFormData] = useState({
@@ -61,29 +62,16 @@ const SellTicket = () => {
   const handleConfirmFind = async () => {
     setModalState(prev => ({ ...prev, isLoading: true }))
     
-    // Mock API call to fetch flight details
-    const mockResponse = {
-      airline: "Air France",
-      departure: {
-        code: "NCE",
-        city: "Paris",
-        time: "2025-07-07T14:30:00Z"
-      },
-      arrival: {
-        code: "JFK",
-        city: "New York",
-        time: "2025-07-15T17:45:00Z"
-      },
-      date: "2025-07-15",
-      price: 450,
-      status: "Available"
-    }
+    // Use the first ticket from your sample data as the mock response.
+    const mockResponse = userTickets[0]
 
     setTimeout(() => {
       setTicketDetails({
         isOpen: true,
         ticket: mockResponse
       })
+      // Also close the loading state in the confirmation modal
+      setModalState(prev => ({ ...prev, isLoading: false, isOpen: false }))
     }, 2000)
   }
 

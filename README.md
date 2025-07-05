@@ -108,7 +108,7 @@ seatswap/
 5. Receive success confirmation
 
 ### Selling a Ticket
-1. Navigate to "Sell Ticket" tab
+1. Navigate to "Import Tickets" tab
 2. Fill out comprehensive ticket form
 3. Submit form with validation
 4. Review listing details in confirmation modal

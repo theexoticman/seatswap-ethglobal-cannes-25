@@ -103,8 +103,8 @@ const MyTickets = ({ walletAddress }) => {
   return (
     <div>
       <div className="mb-8">
-        <h2 className="text-3xl font-bold text-foreground mb-2">My Tickets</h2>
-        <p className="text-muted-foreground">View and manage your flight tickets.</p>
+        <h2 className="text-3xl font-bold text-foreground mb-2">My Tickets - Sell Ticket</h2>
+        <p className="text-muted-foreground">View and manage your flight tickets. Import tickets to sell them.</p>
       </div>
       
       {tickets.length === 0 ? (

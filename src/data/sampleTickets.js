@@ -72,35 +72,17 @@ export const marketplaceTickets = [
 
 export const userTickets = [
   {
-    id: 5,
-    airline: "Delta",
-    departure: {
-      code: "ATL",
-      city: "Atlanta",
-      time: "2024-08-18T16:45:00Z"
-    },
-    arrival: {
-      code: "CDG",
-      city: "Paris",
-      time: "2024-08-19T08:30:00Z"
-    },
-    date: "2024-08-18",
-    price: 520,
-    status: "Redeemable",
-    sellerWallet: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
-  },
-  {
     id: 6,
-    airline: "United",
+    airline: "Air France",
     departure: {
-      code: "SFO",
-      city: "San Francisco",
-      time: "2024-08-22T12:00:00Z"
+      code: "NCE",
+      city: "Nice",
+      time: "2025-07-08T12:00:00Z"
     },
     arrival: {
-      code: "NRT",
-      city: "Tokyo",
-      time: "2024-08-23T15:30:00Z"
+      code: "ORL",
+      city: "Paris",
+      time: "2025-07-08T15:30:00Z"
     },
     date: "2024-08-22",
     price: 680,
@@ -109,3 +91,21 @@ export const userTickets = [
   }
 ]
 
+export const userTicketsToAdd = {
+  id: 5,
+  airline: "Air France",
+  departure: {
+    code: "CDG",
+    city: "Paris",
+    time: "2025-11-19T16:45:00Z"
+  },
+  arrival: {
+    code: "EZE",
+    city: "Buenos Aires",
+    time: "2025-12-01T08:30:00Z"
+  },
+  date: "2024-08-18",
+  price: 520,
+  status: "Redeemable",
+  sellerWallet: '0xf39Fd6e51aad88F6F4ce6aB8827279cffFb92266'
+}
