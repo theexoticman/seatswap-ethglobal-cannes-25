@@ -1,42 +1,30 @@
-import React, { useState, useEffect } from 'react'
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import React, { useEffect } from 'react'
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { SellTicketQR } from './SellTicketQR'
-import { Button } from '@/components/ui/button'
 
 const SellTicketModal = ({ isOpen, onClose, onConfirm, ticket }) => {
-  const [isVerified, setIsVerified] = useState(false)
-
-  // Reset verification status when the modal is closed
-  useEffect(() => {
-    
-  }, [isOpen])
-
-  const handleConfirmClick = () => {
-    if (isVerified) {
-      onConfirm()
+  const handleVerified = (verified) => {
+    if (verified) {
+      // Immediately call the onConfirm prop to trigger the next modal
+      onConfirm();
     }
-  }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent>
         <DialogHeader>
           <DialogTitle>Verify Your Identity</DialogTitle>
+          <DialogDescription className="text-muted-foreground text-center pt-2">
+            Please scan the QR code with the Self mobile app to verify you own this ticket.
+          </DialogDescription>
         </DialogHeader>
         <div className="flex flex-col items-center justify-center space-y-4 py-4">
-          <p className="text-muted-foreground">Please scan to verify your identity with Self.xyz</p>
-          <SellTicketQR ticket={ticket} onVerified={() => setIsVerified(true)} />
-          <Button
-            onClick={handleConfirmClick}
-            disabled={!isVerified}
-            className="mt-4 w-1/2"
-          >
-            {isVerified ? 'Confirmed! Click to Continue' : 'Awaiting Verification...'}
-          </Button>
+          <SellTicketQR ticket={ticket} onVerified={handleVerified} />
         </div>
       </DialogContent>
     </Dialog>
-  )
-}
+  );
+};
 
-export default SellTicketModal 
+export default SellTicketModal; 
