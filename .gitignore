@@ -5,3 +5,5 @@ node_modules/
 
 onchain/artifacts/
 onchain/cache/
+
+server/.next/
