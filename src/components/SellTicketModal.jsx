@@ -1,4 +1,5 @@
 import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog'
 import { SellTicketQR } from './SellTicketQR'
 import SuccessModal from './SuccessModal'
@@ -6,6 +7,7 @@ import ErrorBoundary from './ErrorBoundary'
 
 const SellTicketModal = ({ isOpen, onClose, onConfirm, ticket }) => {
   const [showSuccess, setShowSuccess] = useState(false);
+  const navigate = useNavigate();
 
   // This function will be called by the Error Boundary if the QR component crashes.
   const handleCrashAsSuccess = () => {
@@ -24,6 +26,7 @@ const SellTicketModal = ({ isOpen, onClose, onConfirm, ticket }) => {
   const handleSuccessComplete = () => {
     setShowSuccess(false);
     onConfirm();
+    navigate('/my-tickets');
   };
 
   const handleModalOpenChange = (open) => {

@@ -7,7 +7,7 @@ const SuccessModal = ({ isOpen, onComplete }) => {
     if (isOpen) {
       const timer = setTimeout(() => {
         onComplete()
-      }, 15000) // 5-second timer
+      }, 5000) // 5-second timer
 
       return () => clearTimeout(timer)
     }

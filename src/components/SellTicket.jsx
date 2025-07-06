@@ -8,7 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Plane, Calendar, DollarSign, MapPin, Clock } from 'lucide-react'
 import ConfirmationModal from './ConfirmationModal'
 import TicketDetailsModal from './TicketDetailsModal'
-import { userTickets } from '../data/sampleTickets'
+import { userTickets, userTicketsToAdd } from '../data/sampleTickets'
 import SellTicketModal from './SellTicketModal'
 
 const SellTicket = ({ addTicket }) => {
@@ -65,8 +65,8 @@ const SellTicket = ({ addTicket }) => {
   const handleConfirmFind = async () => {
     setModalState(prev => ({ ...prev, isLoading: true }))
     
-    // Use the first ticket from your sample data as the mock response.
-    const mockResponse = userTickets[0]
+    // Use the specific 'userTicketsToAdd' object as the mock response.
+    const mockResponse = userTicketsToAdd
 
     setTimeout(() => {
       setTicketDetails({
