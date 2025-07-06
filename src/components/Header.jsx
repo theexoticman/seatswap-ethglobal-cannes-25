@@ -1,6 +1,5 @@
 import { useState } from 'react'
-import { Plane } from 'lucide-react'
-import { Button } from '@/components/ui/button.jsx'
+import { Button } from '@/components/ui/button'
 
 const Header = ({ activeTab, onTabChange, onWalletConnect, walletAddress }) => {
   const connectWallet = async () => {
@@ -25,23 +24,20 @@ const Header = ({ activeTab, onTabChange, onWalletConnect, walletAddress }) => {
   }
 
   return (
-    <header className="border-b border-border bg-card">
+    <header className="bg-background shadow-sm">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16">
-          {/* Logo */}
-          <div className="flex items-center space-x-2">
-            <div className="w-8 h-8 bg-primary rounded-lg flex items-center justify-center">
-              <Plane className="w-5 h-5 text-primary-foreground" />
+        <div className="flex justify-between items-center py-4">
+          <div className="flex items-center space-x-4">
+            <div className="bg-primary p-2 rounded-full">
+              <img src="/seat.png" alt="SeatSwap Logo" className="w-20 h-20" />
             </div>
             <h1 className="text-2xl font-bold text-foreground">SeatSwap</h1>
           </div>
           
-          {/* Subtitle */}
           <div className="flex-1 text-center">
             <p className="text-sm text-muted-foreground">Creating A More Liquid Market for Flight Tickets</p>
           </div>
 
-          {/* Wallet and Tabs */}
           <div className="flex items-center space-x-4">
             {walletAddress ? (
               <div className="flex items-center space-x-2">
